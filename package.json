@@ -1,0 +1,33 @@
+{
+  "name": "top_battleship",
+  "version": "1.0.0",
+  "description": "A battleship game part of <a href=\"https://www.theodinproject.com/lessons/node-path-javascript-battleship\">The Odin Project assignment</a>.",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "watch-test": "jest --watch *.js",
+    "watch": "webpack --watch",
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "css-loader": "^6.7.3",
+    "date-fns": "^2.29.3",
+    "style-loader": "^3.3.1"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "clean-webpack-plugin": "^4.0.0",
+    "eslint": "^8.34.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.6.0",
+    "eslint-import-resolver-webpack": "^0.13.2",
+    "eslint-plugin-import": "^2.27.5",
+    "html-webpack-plugin": "^5.5.0",
+    "jest": "^29.4.2",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  }
+}

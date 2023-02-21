@@ -1,5 +1,4 @@
-// import Ship from 'Modules/ship';
-import Ship from '../../src/modules/ship';
+import Ship from 'Modules/ship'; 
 
 it('expect invalid ship length #undefined', () => {
   expect(() => new Ship()).toThrow('Invalid input');

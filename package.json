@@ -3,8 +3,24 @@
   "version": "1.0.0",
   "description": "A battleship game part of <a href=\"https://www.theodinproject.com/lessons/node-path-javascript-battleship\">The Odin Project assignment</a>.",
   "private": true,
+  "jest": {
+    "moduleNameMapper": {
+      "^Assets/(.*)$": "<rootDir>/src/assets/$1",
+      "^Controller/(.*)$": "<rootDir>/src/controller/$1",
+      "^Data/(.*)$": "<rootDir>/src/assets/data/$1",
+      "^Fonts/(.*)$": "<rootDir>/src/assets/fonts/$1",
+      "^Icon/(.*)$": "<rootDir>/src/assets/icon/$1",
+      "^Images/(.*)$": "<rootDir>/src/assets/images/$1",
+      "^Modules/(.*)$": "<rootDir>/src/modules/$1",
+      "^Style/(.*)$": "<rootDir>/src/style/$1",
+      "^Svg/(.*)$": "<rootDir>/src/assets/images/svg/$1",
+      "^Utilities/(.*)$": "<rootDir>/src/utilities/$1",
+      "^View/(.*)$": "<rootDir>/src/view/$1"
+    }
+  },
   "scripts": {
     "test": "jest",
+    "test-clear": "jest --clearCache",
     "watch-test": "jest --watch *.js",
     "watch": "webpack --watch",
     "build": "webpack"

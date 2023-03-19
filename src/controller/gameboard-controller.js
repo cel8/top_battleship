@@ -5,6 +5,7 @@ const BOARD_SIZE = 10;
 
 export default class GameboardController {
   constructor(userGameboard = false) {
+    this.boardSize = BOARD_SIZE;
     this.gameboard = new Array(BOARD_SIZE);
     for (let i = 0; i < BOARD_SIZE; i += 1) this.gameboard[i] = new Array(BOARD_SIZE);
     this.userGameboard = userGameboard || false;
@@ -19,6 +20,14 @@ export default class GameboardController {
     return true;
   }
 
+  #checkAdjacent(x, y) {
+    let isAdjacent = false;
+    this.shipMap.forEach(coords => {
+      if (!isAdjacent) isAdjacent = coords.some((e) => (Math.abs(e.x - x) <= 1) && ((Math.abs(e.y - y) <= 1)));
+    });
+    return isAdjacent;
+  }
+
   isUserGameboard() { return this.userGameboard; }
 
   place(ship, x, y, vertical = false) {
@@ -27,6 +36,7 @@ export default class GameboardController {
     if (!GameboardController.#isValidCoord(x, y) ||
        (vertical  && (+x + ship.length >= BOARD_SIZE)) ||
        (!vertical && (+y + ship.length >= BOARD_SIZE))) return false;
+    if (this.#checkAdjacent(x, y)) return false;
 
     if (vertical) {
       for (let i = +x; i < (+x + ship.length); i += 1) { 

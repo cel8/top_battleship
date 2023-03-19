@@ -3,6 +3,7 @@ import GameboardController from 'Controller/gameboard-controller';
 
 let gameboardController;
 let patrolBoat;
+let patrolBoatB;
 
 const invalidAttack = {
   exit: false
@@ -29,6 +30,7 @@ const validAttackSunk = {
 beforeEach(() => {
   gameboardController = new GameboardController();
   patrolBoat = new Ship(2);
+  patrolBoatB = new Ship(2);
   // set a ship in [0,0] vertical
   gameboardController.gameboard[0][0] = patrolBoat;
   gameboardController.gameboard[0][1] = patrolBoat;
@@ -87,6 +89,16 @@ it('invalid place location #3', () => {
 
 it('invalid place location #4', () => {
   expect(gameboardController.place(patrolBoat, 0, 15)).toBeFalsy();
+});
+
+it('invalid place location (adjacent) #5', () => {
+  expect(gameboardController.place(patrolBoat, 3, 5)).toBeTruthy();
+  expect(gameboardController.place(patrolBoatB, 3, 6)).toBeFalsy();
+});
+
+it('valid place location (not adjacent)', () => {
+  expect(gameboardController.place(patrolBoat, 3, 5)).toBeTruthy();
+  expect(gameboardController.place(patrolBoatB, 5, 5)).toBeTruthy();
 });
 
 it('receive an attack', () => {

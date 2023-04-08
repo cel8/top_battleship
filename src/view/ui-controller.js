@@ -8,7 +8,6 @@ import ButtonManager from 'Utilities/button-manager';
 import UiGameController from 'View/ui-game-controller';
 
 const root = document.documentElement;
-const body = document.querySelector('body');
 const main = document.querySelector('main');
 
 export const settings = { theme: 'dark' };
@@ -35,11 +34,13 @@ export default class UiController {
   }
 
   #doCreateHome() {
+    DomManager.removeAllChildNodes(main);
+    this.uiGameController.doResetGame();
   }
 
   #doLoadOverlay() {
     const overlay = document.querySelector('#overlay');
-    const divOverlay = DomManager.createAddNode('div', overlay, 'overlay-popup');
+    DomManager.createAddNode('div', overlay, 'overlay-popup');
     // Hide overlay
     // DomManager.toggleDisplayByNode(overlay);
     this.uiGameController.doCreateGameOverlay();
@@ -53,13 +54,7 @@ export default class UiController {
   }
 
   #doLoadMainContent() {
-    this.#doCreateNavBar();
     this.#doCreateHome();
-  }
-
-  #doCreateNavBar() {
-    /* Create navigation bar */
-    const nav = document.querySelector('nav');
   }
 
   static #doLoadFooter() {

@@ -20,23 +20,38 @@ export default class GameboardController {
     return true;
   }
 
-  #checkAdjacent(x, y) {
+  #checkAdjacent(x, y, shipLength, vertical) {
     let isAdjacent = false;
     this.shipMap.forEach(coords => {
-      if (!isAdjacent) isAdjacent = coords.some((e) => (Math.abs(e.x - x) <= 1) && ((Math.abs(e.y - y) <= 1)));
+      if (vertical) {
+        for (let i = x; i < (x + shipLength) && !isAdjacent; i += 1) {
+          if (!isAdjacent) isAdjacent = coords.some((e) => (Math.abs(e.x - i) <= 1) && ((Math.abs(e.y - y) <= 1)));
+        }
+      } else {
+        for (let i = y; i < (y + shipLength) && !isAdjacent; i += 1) {
+          if (!isAdjacent) isAdjacent = coords.some((e) => (Math.abs(e.x - x) <= 1) && ((Math.abs(e.y - i) <= 1)));
+        }
+      }
     });
     return isAdjacent;
   }
 
   isUserGameboard() { return this.userGameboard; }
 
+  get BoardSize() { return this.boardSize }
+
+  checkPlace(shipLength, x, y, vertical = false) {
+    if (!GameboardController.#isValidCoord(x, y) ||
+       (vertical  && (+x + shipLength > BOARD_SIZE)) ||
+       (!vertical && (+y + shipLength > BOARD_SIZE))) return false;
+    if (this.#checkAdjacent(x, y, shipLength, vertical)) return false;
+    return true;
+  }
+
   place(ship, x, y, vertical = false) {
     const coordinates = [];
     if (!(ship instanceof Ship)) return false;
-    if (!GameboardController.#isValidCoord(x, y) ||
-       (vertical  && (+x + ship.length >= BOARD_SIZE)) ||
-       (!vertical && (+y + ship.length >= BOARD_SIZE))) return false;
-    if (this.#checkAdjacent(x, y)) return false;
+    if (!this.checkPlace(ship.length, +x, +y, vertical)) return false;
 
     if (vertical) {
       for (let i = +x; i < (+x + ship.length); i += 1) { 

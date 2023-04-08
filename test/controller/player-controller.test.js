@@ -67,25 +67,25 @@ beforeEach(() => {
 
 it('Create valid object #1', () => {
   expect(() => {
-    const p1 = new Player(mockedGameboardController);
+    const p1 = new Player('PlayerName1', mockedGameboardController);
   }).not.toThrow('Invalid input');
 });
 
 it('Create valid object #2', () => {
   expect(() => {
-    const p1 = new Player(mockedGameboardController, PlayerType.human);
+    const p1 = new Player('PlayerName1', mockedGameboardController, PlayerType.human);
   }).not.toThrow('Invalid input');
 });
 
 it('Create valid object #3', () => {
   expect(() => {
-    const p1 = new Player(mockedGameboardController, PlayerType.ai);
+    const p1 = new Player('PlayerBot1', mockedGameboardController, PlayerType.ai);
   }).not.toThrow('Invalid input');
 });
 
 it('Create invalid object #1', () => {
   expect(() => {
-    const p1 = new Player(mockedGameboardController, 1);
+    const p1 = new Player('PlayerName1', mockedGameboardController, 1);
   }).toThrow('Invalid input');
 });
 
@@ -96,12 +96,12 @@ it('Create invalid object #2', () => {
 });
 
 it('Play human round (invalid) #1', () => {
-  const p1 = new Player(mockedGameboardController);
+  const p1 = new Player('PlayerName1', mockedGameboardController);
   expect(() => p1.playTurn()).toThrow('Invalid input');
 })
 
 it('Play human round (water) #1', () => {
-  const p1 = new Player(mockedGameboardControllerWater);
+  const p1 = new Player('PlayerName1', mockedGameboardControllerWater);
   expect(p1.playTurn(0,0)).toMatchObject({
     exit: true,
     water: true
@@ -109,7 +109,7 @@ it('Play human round (water) #1', () => {
 });
 
 it('Play human round (hit) #1', () => {
-  const p1 = new Player(mockedGameboardControllerHit);
+  const p1 = new Player('PlayerName1', mockedGameboardControllerHit);
   expect(p1.playTurn(0,0)).toMatchObject({
     exit: true,
     water: false,
@@ -118,19 +118,19 @@ it('Play human round (hit) #1', () => {
 });
 
 it('Play easy AI round', () => {
-  const ai = new Player(mockedGameboardControllerWater, PlayerType.ai, BotDifficulty.easy);
+  const ai = new Player('PlayerBot1', mockedGameboardControllerWater, PlayerType.ai, BotDifficulty.easy);
   const reply = ai.playTurn();
   expect(reply.exit).toBeTruthy();
 });
 
 it('Play medium AI round (random) #1', () => {
-  const ai = new Player(mockedGameboardControllerWater, PlayerType.ai, BotDifficulty.medium);
+  const ai = new Player('PlayerBot1', mockedGameboardControllerWater, PlayerType.ai, BotDifficulty.medium);
   const reply = ai.playTurn();
   expect(reply.exit).toBeTruthy();
 });
 
 it('Play medium AI round (last position) hit and sunk (horizontal) #2', () => {
-  const ai = new Player(gameboardController, PlayerType.ai, BotDifficulty.medium);
+  const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 4, y: 4};
   ai.stateAI.trackAttacks.add({x: 4, y: 4});
   let reply = ai.playTurn();
@@ -165,7 +165,7 @@ it('Play medium AI round (last position) hit and sunk (horizontal) #2', () => {
 });
 
 it('Play medium AI round (last position) hit and sunk (vertical) #2', () => {
-  const ai = new Player(gameboardController, PlayerType.ai, BotDifficulty.medium);
+  const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 7, y: 7};
   ai.stateAI.trackAttacks.add({x: 7, y: 7});
   let reply = ai.playTurn();
@@ -186,7 +186,7 @@ it('Play medium AI round (last position) hit and sunk (vertical) #2', () => {
 });
 
 it('Play medium AI round (last position) hit and sunk (vertical ship-length 3) best case #3', () => {
-  const ai = new Player(gameboardController, PlayerType.ai, BotDifficulty.medium);
+  const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 0, y: 2};
   ai.stateAI.trackAttacks.add({x: 0, y: 2});
   let reply = ai.playTurn();
@@ -209,7 +209,7 @@ it('Play medium AI round (last position) hit and sunk (vertical ship-length 3) b
 });
 
 it('Play medium AI round (last position) hit and sunk (horizontal ship-length 3) worst case #4', () => {
-  const ai = new Player(gameboardController, PlayerType.ai, BotDifficulty.medium);
+  const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 1, y: 5};
   ai.stateAI.trackAttacks.add({x: 1, y: 5});
   let reply = ai.playTurn();

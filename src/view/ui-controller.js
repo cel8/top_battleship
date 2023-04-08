@@ -5,6 +5,7 @@ import 'Svg/dark-theme.svg';
 import 'Svg/light-theme.svg';
 import DomManager from 'Utilities/dom-manager';
 import ButtonManager from 'Utilities/button-manager';
+import UiGameController from 'View/ui-game-controller';
 
 const root = document.documentElement;
 const body = document.querySelector('body');
@@ -14,6 +15,7 @@ export const settings = { theme: 'dark' };
 
 export default class UiController {
   constructor() {
+    this.uiGameController = new UiGameController();
   }
 
   #doLoadHeader() {
@@ -36,7 +38,18 @@ export default class UiController {
   }
 
   #doLoadOverlay() {
-
+    const overlay = document.querySelector('#overlay');
+    const divOverlay = DomManager.createAddNode('div', overlay, 'overlay-popup');
+    // Hide overlay
+    // DomManager.toggleDisplayByNode(overlay);
+    this.uiGameController.doCreateGameOverlay();
+    // document.addEventListener('click', (e) => {
+    //   if(e.target.id === 'overlay') { // Close overlay
+    //     DomManager.toggleDisplayByNode(overlay);
+    //     if(formOverlay.style.display !== 'none') DomManager.toggleDisplayByNode(formOverlay);
+    //     if(divWinnerOverlay.style.display !== 'none') DomManager.toggleDisplayByNode(divWinnerOverlay);
+    //   }
+    // });
   }
 
   #doLoadMainContent() {

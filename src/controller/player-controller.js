@@ -3,7 +3,8 @@ import BotDifficulty from "Modules/bot-difficulty";
 import AttackTrackerSet from "Modules/attack-tracker-set";
 
 export default class Player {
-  constructor(gameboard, type = PlayerType.human, difficulty = undefined) {
+  constructor(name, gameboard, type = PlayerType.human, difficulty = undefined) {
+    this.name = name;
     if ((type !== PlayerType.human) && (type !== PlayerType.ai)) throw new 'Invalid input';
     if (!gameboard) throw new 'Invalid input';
     this.gameboard = gameboard;

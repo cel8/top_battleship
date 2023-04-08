@@ -75,6 +75,14 @@ it('place a 2 length (vertical) ship in invalid coordinate', () => {
   expect(gameboardController.shipMap.get(patrolBoat)).not.toEqual([ {x:9,y:5} ]);
 });
 
+it('place a 2 length (horizontal) board ship in valid coordinate', () => {
+  expect(gameboardController.place(patrolBoat, 3, 8)).toBeTruthy();
+  expect(gameboardController.gameboard[3][8]).toBe(patrolBoat);
+  expect(gameboardController.gameboard[3][9]).toBe(patrolBoat);
+  expect(gameboardController.shipMap.get(patrolBoat)).toEqual([ {x:3,y:8}, {x:3,y:9} ]);
+});
+
+
 it('invalid place location #1', () => {
   expect(gameboardController.place(patrolBoat, -1, 0)).toBeFalsy();
 });
@@ -94,6 +102,11 @@ it('invalid place location #4', () => {
 it('invalid place location (adjacent) #5', () => {
   expect(gameboardController.place(patrolBoat, 3, 5)).toBeTruthy();
   expect(gameboardController.place(patrolBoatB, 3, 6)).toBeFalsy();
+});
+
+it('invalid place location (adjacent) #6', () => {
+  expect(gameboardController.place(patrolBoat, 3, 5)).toBeTruthy();
+  expect(gameboardController.place(patrolBoatB, 3, 3)).toBeFalsy();
 });
 
 it('valid place location (not adjacent)', () => {

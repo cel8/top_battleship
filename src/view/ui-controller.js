@@ -40,15 +40,12 @@ export default class UiController {
     const overlay = document.querySelector('#overlay');
     DomManager.createAddNode('div', overlay, 'overlay-popup');
     // Hide overlay
-    // DomManager.toggleDisplayByNode(overlay);
     this.uiGameController.doCreateGameOverlay();
-    // document.addEventListener('click', (e) => {
-    //   if(e.target.id === 'overlay') { // Close overlay
-    //     DomManager.toggleDisplayByNode(overlay);
-    //     if(formOverlay.style.display !== 'none') DomManager.toggleDisplayByNode(formOverlay);
-    //     if(divWinnerOverlay.style.display !== 'none') DomManager.toggleDisplayByNode(divWinnerOverlay);
-    //   }
-    // });
+    document.addEventListener('click', (e) => {
+       if(e.target.id === 'overlay') { // Close overlay
+          DomManager.toggleDisplayByNode(overlay);
+       }
+    });
   }
 
   #doLoadMainContent() {

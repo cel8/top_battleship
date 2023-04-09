@@ -211,6 +211,11 @@ input:checked + .slider:before {
   cursor: pointer; /* Add a pointer on hover */
 }
 
+.overlay-popup {
+  margin-top: 4.5rem;
+  margin-bottom: 4.5rem;
+}
+
 /* Form */
 
 .manage-div-play {
@@ -270,6 +275,40 @@ main {
 
 /* Grid template for placement/game box */
 
+.manage-form-placeboat,
+.div-round-controller {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.div-legend-placeboat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.div-legend-placeboat > p,
+.btn-start-round > p {
+  margin: 0rem;
+}
+
+.player-name-round,
+.p-winner {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.player-name {
+  font-weight: 500;
+}
+
+.div-gameboard-controller {
+  margin-bottom: 3rem;
+}
+
 .manage-div-placeboat,
 .div-gameboard {
   display: grid;
@@ -283,8 +322,8 @@ main {
 .box {
   text-align: center;
   border: 1px solid #000;
-  height: 3.5rem;
-  width: 3.5rem;
+  height: 3rem;
+  width: 3rem;
   color: red;
 }
 
@@ -304,4 +343,23 @@ main {
 
 .box.water {
   background-color: #39ADB5;
+}
+
+.manage-winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* Media query */
+
+@media only screen and (min-width: 1080px) {
+  .div-gameboard-controller {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5rem;
+  }
 }

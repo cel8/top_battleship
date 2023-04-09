@@ -84,6 +84,7 @@ export default class UiGameController {
 
   doResetGame() {
     const main = document.querySelector('main');
+    main.style.filter = 'blur(0rem)';
     DomManager.removeAllChildNodes(main);
     const overlay = document.querySelector('#overlay');
     if (overlay.style.display === 'none') DomManager.toggleDisplayByNode(overlay);
@@ -548,6 +549,8 @@ export default class UiGameController {
   }
 
   #doShowWinner() {
+    const main = document.querySelector('main');
+    main.style.filter = 'blur(0.8rem)';
     const overlay = document.querySelector('#overlay');
     if (overlay.style.display === 'none') DomManager.toggleDisplayByNode(overlay);
     const divOverlay = document.querySelector('.overlay-popup');

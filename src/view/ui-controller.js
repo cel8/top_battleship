@@ -43,7 +43,7 @@ export default class UiController {
     this.uiGameController.doCreateGameOverlay();
     document.addEventListener('click', (e) => {
        if(e.target.id === 'overlay') { // Close overlay
-          DomManager.toggleDisplayByNode(overlay);
+        this.uiGameController.doResetGame();
        }
     });
   }

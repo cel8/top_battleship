@@ -19,6 +19,10 @@ export default class Player {
     };
   }
 
+  get Name() { return this.name }
+  
+  get GameBoard() { return this.gameboard }
+
   playTurn(x = undefined, y = undefined) {
     if ((this.type === PlayerType.human) && ((x === undefined) || (y === undefined))) 
       throw new 'Invalid input';

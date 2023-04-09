@@ -5,6 +5,7 @@ import BotDifficulty from "Modules/bot-difficulty";
 import PlayerType from "Modules/player-type";
 import Player from "Controller/player-controller";
 import GameboardController from "Controller/gameboard-controller";
+import differenceInMilliseconds from 'date-fns/differenceInMilliseconds';
 import 'Svg/account-multiple-outline.svg';
 import 'Svg/robot-angry-outline.svg';
 import Ship from "Modules/ship";
@@ -13,9 +14,11 @@ const phases = {
   rest:          0,
   createPlayerA: 1,
   createPlayerB: 2,
-  playA:         3,
-  playB:         4,
-  winner:        5
+  prepareBoards: 3,
+  waitRound:     4,
+  playA:         5,
+  playB:         6,
+  winner:        7
 };
 
 export default class UiGameController {
@@ -37,7 +40,7 @@ export default class UiGameController {
       object: undefined
     };
     this.desPlaceShip = {
-      lengths: [ 2, 3, 3, 4, 5 ],
+      lengths: [ 1, 2, 3, 3, 4, 5 ],
       current: 0,
       vertical: true
     };
@@ -45,9 +48,20 @@ export default class UiGameController {
       length: 0,
       valid: false
     }
+    this.curPlayer = undefined;
+    this.score = {
+      a: 0,
+      b: 0,
+    }
   }
 
-  doResetGame() {
+  static #hideOverlay() {
+    const overlay = document.querySelector('#overlay');
+    if (overlay.style.display !== 'none') DomManager.toggleDisplayByNode(overlay);
+    UiGameController.#doRemoveOverlay();
+  }
+
+  static #doRemoveOverlay() {
     const divOverlay = document.querySelector('.overlay-popup');
     if (divOverlay) {
       const divPlayGameOverlay = divOverlay.querySelector('.manage-div-play');
@@ -63,7 +77,17 @@ export default class UiGameController {
       if (formPlayGameOverlay) DomManager.removeAllChildNodes(formPlayGameOverlay);
       const divFormPlaceBoat = divOverlay.querySelector('.manage-form-placeboat');
       if (divFormPlaceBoat) DomManager.removeAllChildNodes(divFormPlaceBoat);
+      const divWinner = divOverlay.querySelector('.manage-winner');
+      if (divWinner) DomManager.removeAllChildNodes(divWinner);
     }
+  }
+
+  doResetGame() {
+    const main = document.querySelector('main');
+    DomManager.removeAllChildNodes(main);
+    const overlay = document.querySelector('#overlay');
+    if (overlay.style.display === 'none') DomManager.toggleDisplayByNode(overlay);
+    UiGameController.#doRemoveOverlay();
     this.#initGameVariables();
   }
 
@@ -74,6 +98,7 @@ export default class UiGameController {
     const divPlayGameOverlay = DomManager.createAddNode('div', divOverlay, 'manage-div-play');
     const formPlayGameOverlay = DomManager.createAddNode('form', divOverlay, 'manage-form-players');
     DomManager.createAddNode('div', divOverlay, 'manage-form-placeboat');
+    DomManager.createAddNode('div', divOverlay, 'manage-winner');
 
     const patterns = {
       editPlayerNameA: /^[a-z\s']{2,30}$/i,
@@ -204,6 +229,7 @@ export default class UiGameController {
     const formPlaceBoat = document.querySelector('.manage-form-placeboat');
     DomManager.removeAllChildNodes(formPlaceBoat);
     DomManager.createAddNode('p', formPlaceBoat, 'player-name-legend', null,  `It's ${this.playerB.name} turn for place boats.`);
+    const start = new Date();
 
     do {
       const vertical = Math.random() < 0.5;
@@ -211,15 +237,20 @@ export default class UiGameController {
       const y = Math.floor(Math.random() * gameboardController.BoardSize);
 
       if (gameboardController.place(new Ship(lengths[this.desPlaceShip.current]), x, y, vertical)) {
-        console.log(`bot place @ (${x},${y}) vertical = ${vertical}`)
         this.desPlaceShip.current += 1;
         if (this.desPlaceShip.current === lengths.length) {
           this.playerB.object = new Player(this.playerB.name, gameboardController, PlayerType.ai, this.playerB.difficulty);
-          this.#doGameFSM(phases.playA);
           exit = true;
         }
       }
     } while(!exit);
+
+    // Get elaboration in ms
+    const ms = differenceInMilliseconds(new Date(), start);
+
+    // Simulate a wait of 5s (or wait zero)
+    const delay = (5000 - ms < 0) ? 0 : 5000 - ms;
+    setTimeout(() => { this.#doGameFSM(phases.prepareBoards); }, delay);
   }
 
   #doChangeBoatLengthLegend() {
@@ -260,7 +291,7 @@ export default class UiGameController {
           this.playerB.object = new Player(this.playerB.name, gameboardController);
         }
         const nextState = this.stepPhase === phases.createPlayerA ? phases.createPlayerB 
-          : phases.playA;
+          : phases.prepareBoards;
         this.#doGameFSM(nextState);
       }
     }
@@ -338,6 +369,221 @@ export default class UiGameController {
     this.#unsetPreviousHover(event.target, x, y, gameboardController.BoardSize, this.desPlaceShip.vertical);
   }
 
+  #doCreateBoard(parent, player) {
+    const divPlayerController = DomManager.createAddNode('div', parent, 'div-player-controller');
+    DomManager.createAddNode('p', divPlayerController, 'player-name', null, `${player.Name}`);
+    const divGameboard = DomManager.createAddNode('div', divPlayerController, 'div-gameboard');
+    divGameboard.dataset.player = this.#getPlayerSide(player);
+    for (let i = 0; i < player.GameBoard.BoardSize; i+=1) {
+      for (let j = 0; j < player.GameBoard.BoardSize; j+=1) {
+        const grid = ButtonManager.createButton('', null, 'box', (e) => this.#onPlayUserRound(e));
+        grid.dataset.x = i;
+        grid.dataset.y = j;
+        DomManager.addNodeChild(divGameboard, grid);
+      }
+    }
+  }
+
+  #getPlayerSide(player) { return player === this.playerA.object ? 'A' : 'B'; }
+
+  #getOpponentPlayer() { return this.curPlayer === this.playerA ? this.playerB : this.playerA }
+
+  static #setWater(element) {
+    if (element) {
+      element.classList.add('water');
+    }
+  }
+
+  static #setHit(element) {
+    if (element) {
+      element.textContent = 'X';
+      element.classList.add('set');
+    }
+  }
+
+  static #setWaterSunk(parent, x, y) {
+    const element = parent.querySelector(`[data-x='${x}'][data-y='${y}']`);
+    if (element && element.textContent !== 'X') {
+      element.textContent = '*';
+      element.classList.add('water');
+    }
+  }
+
+  static #sunkShip(parent, coordinates) {
+    coordinates.forEach(coordinate => {
+      UiGameController.#setWaterSunk(parent, coordinate.x - 1, coordinate.y);
+      UiGameController.#setWaterSunk(parent, coordinate.x + 1, coordinate.y);
+      UiGameController.#setWaterSunk(parent, coordinate.x, coordinate.y - 1);
+      UiGameController.#setWaterSunk(parent, coordinate.x, coordinate.y + 1);
+      UiGameController.#setWaterSunk(parent, coordinate.x - 1, coordinate.y - 1);
+      UiGameController.#setWaterSunk(parent, coordinate.x + 1, coordinate.y + 1);
+      UiGameController.#setWaterSunk(parent, coordinate.x - 1, coordinate.y + 1);
+      UiGameController.#setWaterSunk(parent, coordinate.x + 1, coordinate.y - 1);
+    });
+  }
+
+  #onPlayUserRound(event) {
+    const target = (event.target.nodeName.toLowerCase() === 'button') ? event.target : event.target.parentNode;
+    // Check current play phase click not allowed
+    if ((this.stepPhase !== phases.playA) && (this.stepPhase !== phases.playB)) return;
+    // Click not allowed during AI round
+    if (!this.curPlayer.human) return;
+    // Get current player side if click is allowed
+    const curPlayerSide = this.#getPlayerSide(this.curPlayer.object);
+    const parent = target.parentNode;
+    if (parent.dataset.player === curPlayerSide) return;
+    // Click is allowed
+    const { dataset } = target;
+    const x = +dataset.x;
+    const y = +dataset.y;
+
+    const phase = this.#doPlayRoundUI(target, x, y);
+    if (phase) {
+      this.#doGameFSM(phase);
+    }
+  }
+
+  #doPrepareBoards() {
+    // Get current player
+    this.curPlayer = Math.random() < 0.5 ? this.playerA : this.playerB;
+    // Hide overlay
+    UiGameController.#hideOverlay();
+    // Create main board
+    const main = document.querySelector('main');
+    const divGameBoardGrid = DomManager.createAddNode('div', main, 'div-gameboard-grid');
+    const divRoundController = DomManager.createAddNode('div', divGameBoardGrid, 'div-round-controller');
+    DomManager.createAddNode('p', divRoundController, 'player-name-round', null, `It is ${this.curPlayer.name} round`);
+    if (this.playerB.human) { 
+      const btnStartRound = ButtonManager.createTextButton('Start Round', 'btn-start-round', (e) => this.#doStartRound(e));
+      btnStartRound.disabled = true;
+      DomManager.addNodeChild(divRoundController, btnStartRound);
+    } 
+
+    const divGameBoardController = DomManager.createAddNode('div', divGameBoardGrid, 'div-gameboard-controller');
+    this.#doCreateBoard(divGameBoardController, this.playerA.object);
+    this.#doCreateBoard(divGameBoardController, this.playerB.object);
+    if (!this.playerB.human) {
+      this.#doShowHideCurrentBoard(true, this.playerA.object);
+    }
+    this.#doGameFSM(phases.waitRound);
+  }
+
+  #doWaitRound() {
+    if (this.playerB.human) {
+      const btnStartRound = document.querySelector('.btn-start-round');
+      btnStartRound.disabled = false;
+    } else {
+      const nextPhase = this.#getPlayerSide(this.curPlayer.object) === 'A' ? phases.playA : phases.playB;
+      this.#doGameFSM(nextPhase);
+    }
+  }
+
+  #doStartRound(event) {
+    const target = (event.target.nodeName.toLowerCase() === 'button') ? event.target : event.target.parentNode;
+    target.disabled = true;
+    this.#doShowHideCurrentBoard(true);
+    const nextPhase = this.#getPlayerSide(this.curPlayer.object) === 'A' ? phases.playA : phases.playB;
+    this.#doGameFSM(nextPhase);
+  }
+
+  #doPlayRoundAI() {
+    let phase;
+    do {
+      const x = Math.floor(Math.random() * this.curPlayer.object.GameBoard.BoardSize);
+      const y = Math.floor(Math.random() * this.curPlayer.object.GameBoard.BoardSize);
+      const parent = document.querySelector(`[data-player='A']`);
+      const element = parent.querySelector(`[data-x='${x}'][data-y='${y}']`);
+      phase = this.#doPlayRoundUI(element, x, y);
+    } while (!phase);
+
+    if (phase) {
+      this.#doGameFSM(phase);
+    }
+  }
+
+  #doSwitchRound() {
+    const playerName = document.querySelector('.player-name-round');
+    if (this.playerB.human) {
+      this.#doShowHideCurrentBoard(false);
+    }
+    this.curPlayer = (this.#getPlayerSide(this.curPlayer.object) === 'A') ? this.playerB : this.playerA;
+    playerName.textContent = `It is ${this.curPlayer.object.Name} round`;
+  }
+
+  #doPlayRoundUI(target, x, y) {
+    let phase;
+    const parent = target.parentNode;
+    const roundValue = this.#getOpponentPlayer().object.playTurn(x, y);
+    if (roundValue.exit) {
+      if (roundValue.water) {
+        UiGameController.#setWater(target);
+        // Switch player
+        if (target.textContent !== '*') {
+          this.#doSwitchRound();
+          phase = phases.waitRound;
+        }
+      } else {
+        UiGameController.#setHit(target);
+        if (roundValue.sunk) {
+          UiGameController.#sunkShip(parent, roundValue.coordinates);
+          if (this.#getPlayerSide(this.curPlayer.object) === 'A') {
+            this.score.a += 1;
+          } else {
+            this.score.b += 1;
+          }
+
+          const { length } = this.desPlaceShip.lengths;
+          if ((this.score.a === length) || (this.score.b === length)) {
+            phase = phases.winner;
+          }
+        }
+      }
+    }
+    return phase;
+  }
+
+  #doShowWinner() {
+    const overlay = document.querySelector('#overlay');
+    if (overlay.style.display === 'none') DomManager.toggleDisplayByNode(overlay);
+    const divOverlay = document.querySelector('.overlay-popup');
+    const divPlayGameOverlay = divOverlay.querySelector('.manage-div-play');
+    if (divPlayGameOverlay) {
+      const divButtons = divPlayGameOverlay.querySelectorAll('.form-icon');
+      const buttons = [...divButtons];
+      buttons.forEach(btn => {
+        btn.disabled = true;
+      });
+    }    
+    const divWinner = divOverlay.querySelector('.manage-winner');
+    DomManager.createAddNode('p', divWinner, 'p-winner', null, `The winner is ${this.curPlayer.object.Name}.`);
+    DomManager.addNodeChild(divWinner, ButtonManager.createTextButton('Play again', 'form-icon', () => {
+      this.#doGameFSM(phases.rest);
+    }));
+  }
+
+  static #doShowHideBoat(element, show) {
+    if (!element) return;
+    if (element.textContent === 'X') return;
+    if (show) {
+      element.classList.add('set');
+    } else {
+      element.classList.remove('set');
+    }
+  }
+
+  #doShowHideCurrentBoard(show, player = undefined) {
+    const playerObject = player || this.curPlayer.object;
+    const shipCoordinates = playerObject.GameBoard.getShipCoordinates();
+    const curPlayerSide = this.#getPlayerSide(playerObject);
+    const parent = document.querySelector(`[data-player='${curPlayerSide}']`);
+    shipCoordinates.forEach(coordinates => {
+      coordinates.forEach(coordinate => {
+        const element = parent.querySelector(`[data-x='${coordinate.x}'][data-y='${coordinate.y}']`);
+        UiGameController.#doShowHideBoat(element, show)
+      });
+    });
+  }
+
   #doGameFSM(nextStep) {
     // Set next step
     this.stepPhase = nextStep;
@@ -354,8 +600,25 @@ export default class UiGameController {
           this.#doCreateBotGameboard();
         }
         break;
+      case phases.prepareBoards:
+        this.#doPrepareBoards();
+        break;
+      case phases.waitRound:
+        this.#doWaitRound();
+        break;
+      case phases.playA:
+        break;
+      case phases.playB:
+        if (!this.playerB.human) {
+          this.#doPlayRoundAI();
+        }
+        break;
+      case phases.winner:
+        this.#doShowWinner();
+        break;
       case phases.rest:
       default:
+        this.doResetGame();
         break;
     }
   }

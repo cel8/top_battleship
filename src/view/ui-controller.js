@@ -8,7 +8,6 @@ import ButtonManager from 'Utilities/button-manager';
 import UiGameController from 'View/ui-game-controller';
 
 const root = document.documentElement;
-const main = document.querySelector('main');
 
 export const settings = { theme: 'dark' };
 
@@ -34,7 +33,6 @@ export default class UiController {
   }
 
   #doCreateHome() {
-    DomManager.removeAllChildNodes(main);
     this.uiGameController.doResetGame();
   }
 

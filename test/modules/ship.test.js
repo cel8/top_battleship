@@ -10,7 +10,7 @@ it('expect invalid ship length #string', () => {
 
 it('expect invalid ship length #out-of-range', () => {
   expect(() => new Ship('6')).toThrow('Invalid out-of-range');
-  expect(() => new Ship('1')).toThrow('Invalid out-of-range');
+  expect(() => new Ship('0')).toThrow('Invalid out-of-range');
 });
 
 it('valid object #ship length 2', () => {

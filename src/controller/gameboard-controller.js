@@ -38,6 +38,12 @@ export default class GameboardController {
 
   isUserGameboard() { return this.userGameboard; }
 
+  getShipCoordinates() {
+    const shipCoordinates = [];
+    this.shipMap.forEach(v => shipCoordinates.push(v));
+    return shipCoordinates;
+  }
+
   get BoardSize() { return this.boardSize }
 
   checkPlace(shipLength, x, y, vertical = false) {

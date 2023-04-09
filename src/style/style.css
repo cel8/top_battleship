@@ -196,6 +196,21 @@ input:checked + .slider:before {
   font-weight: bold;
 }
 
+/* Overlay */
+
+#overlay {
+  position: fixed; /* Sit on top of the page content */
+  width: 100%; /* Full width (cover the whole page) */
+  height: 100%; /* Full height (cover the whole page) */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.1); /* Black background with opacity */
+  z-index: 2; /* Specify a stack order in case you're using a different order for other elements */
+  cursor: pointer; /* Add a pointer on hover */
+}
+
 /* Form */
 
 .manage-div-play {
@@ -255,7 +270,8 @@ main {
 
 /* Grid template for placement/game box */
 
-.manage-div-placeboat {
+.manage-div-placeboat,
+.div-gameboard {
   display: grid;
   grid-template-columns: repeat(10, auto);
   grid-template-rows: repeat(10, auto);
@@ -268,7 +284,8 @@ main {
   text-align: center;
   border: 1px solid #000;
   height: 3.5rem;
-  width: 3.5rem;  
+  width: 3.5rem;
+  color: red;
 }
 
 .box.valid,
@@ -283,4 +300,8 @@ main {
 
 .box.set {
   background-color: gray;
+}
+
+.box.water {
+  background-color: #39ADB5;
 }

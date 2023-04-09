@@ -1,5 +1,5 @@
 import Ship from 'Modules/ship';
-import AttackTrackerSet from 'Modules/attack-tracker-set';
+import CoordinateTrackerSet from 'Modules/coordinate-tracker-set';
 
 const BOARD_SIZE = 10;
 
@@ -9,7 +9,8 @@ export default class GameboardController {
     this.gameboard = new Array(BOARD_SIZE);
     for (let i = 0; i < BOARD_SIZE; i += 1) this.gameboard[i] = new Array(BOARD_SIZE);
     this.userGameboard = userGameboard || false;
-    this.trackAttacks = new AttackTrackerSet();
+    this.trackAttacks = new CoordinateTrackerSet();
+    this.trackAdjacents = new CoordinateTrackerSet();
     this.shipMap = new Map();
   }
 
@@ -22,17 +23,15 @@ export default class GameboardController {
 
   #checkAdjacent(x, y, shipLength, vertical) {
     let isAdjacent = false;
-    this.shipMap.forEach(coords => {
-      if (vertical) {
-        for (let i = x; i < (x + shipLength) && !isAdjacent; i += 1) {
-          if (!isAdjacent) isAdjacent = coords.some((e) => (Math.abs(e.x - i) <= 1) && ((Math.abs(e.y - y) <= 1)));
-        }
-      } else {
-        for (let i = y; i < (y + shipLength) && !isAdjacent; i += 1) {
-          if (!isAdjacent) isAdjacent = coords.some((e) => (Math.abs(e.x - x) <= 1) && ((Math.abs(e.y - i) <= 1)));
-        }
+    if (vertical) {
+      for (let i = x; i < (x + shipLength) && !isAdjacent; i += 1) {
+        if (this.trackAdjacents.has({x: i, y})) isAdjacent = true;
       }
-    });
+    } else {
+      for (let i = y; i < (y + shipLength) && !isAdjacent; i += 1) {
+        if (this.trackAdjacents.has({x, y: i})) isAdjacent = true;
+      }
+    }
     return isAdjacent;
   }
 
@@ -54,21 +53,40 @@ export default class GameboardController {
     return true;
   }
 
+  #addTrackAdjacent(x, y, vertical) {
+    if (vertical) {
+      this.trackAdjacents.add({x, y});
+      this.trackAdjacents.add({x, y: y - 1});
+      this.trackAdjacents.add({x, y: y + 1});
+    } else {
+      this.trackAdjacents.add({x, y});
+      this.trackAdjacents.add({x: x - 1, y});
+      this.trackAdjacents.add({x: x + 1, y});
+
+    }
+  }
+
   place(ship, x, y, vertical = false) {
     const coordinates = [];
     if (!(ship instanceof Ship)) return false;
     if (!this.checkPlace(ship.length, +x, +y, vertical)) return false;
 
     if (vertical) {
+      this.#addTrackAdjacent(+x - 1, +y, vertical);
       for (let i = +x; i < (+x + ship.length); i += 1) { 
         coordinates.push({ x: i, y: +y });
+        this.#addTrackAdjacent(i, +y, vertical);
         this.gameboard[i][+y] = ship;
       }
+      this.#addTrackAdjacent(+x + ship.length, +y, vertical);
     } else {
+      this.#addTrackAdjacent(+x, +y - 1, vertical);
       for (let i = +y; i < (+y + ship.length); i += 1) {
-        coordinates.push({ x: +x, y: i })
+        coordinates.push({ x: +x, y: i });
+        this.#addTrackAdjacent(+x, i, vertical);
         this.gameboard[+x][i] = ship;
       }
+      this.#addTrackAdjacent(+x, +y + ship.length, vertical);
     }
     
     // Add ship into ship container
@@ -88,18 +106,30 @@ export default class GameboardController {
           exit: true,
           water: false,
           sunk: true,
-          coordinates: this.shipMap.get(this.gameboard[+x][+y])
+          coordinates: this.shipMap.get(this.gameboard[+x][+y]),
+          attack: {
+            x,
+            y
+          }
         }; 
       }
       return {
         exit: true,
         water: false,
-        sunk: false
+        sunk: false,
+        attack: {
+          x,
+          y
+        }
       };
     }
     return {
       exit: true,
-      water: true
+      water: true,
+      attack: {
+        x,
+        y
+      }
     };
   }
 };

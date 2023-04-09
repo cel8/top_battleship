@@ -1,16 +1,16 @@
-export default class AttackTrackerSet extends Set {
+export default class CoordinateTrackerSet extends Set {
   static #checkParameter(obj) {
     if (!(typeof(obj) === 'object')) throw new 'Invalid input'; 
     if (obj.x === undefined || obj.y === undefined) throw new 'Invalid input'; 
   }
 
   add(obj) {
-    AttackTrackerSet.#checkParameter(obj);
+    CoordinateTrackerSet.#checkParameter(obj);
     if (!this.has(obj)) super.add(obj);
   }
 
   delete(obj) {
-    AttackTrackerSet.#checkParameter(obj);
+    CoordinateTrackerSet.#checkParameter(obj);
 
     super.forEach((value) => {
       if ((value.x === obj.x) && (value.y === obj.y)) {
@@ -21,7 +21,7 @@ export default class AttackTrackerSet extends Set {
 
   has(obj) {
     let exit = false;
-    AttackTrackerSet.#checkParameter(obj);
+    CoordinateTrackerSet.#checkParameter(obj);
     if (super.has(obj)) return true;
 
     super.forEach((value) => {

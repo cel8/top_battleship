@@ -97,12 +97,12 @@ it('Create invalid object #2', () => {
 
 it('Play human round (invalid) #1', () => {
   const p1 = new Player('PlayerName1', mockedGameboardController);
-  expect(() => p1.playTurn()).toThrow('Invalid input');
+  expect(() => p1.playRound(mockedGameboardController)).toThrow('Invalid input');
 })
 
 it('Play human round (water) #1', () => {
   const p1 = new Player('PlayerName1', mockedGameboardControllerWater);
-  expect(p1.playTurn(0,0)).toMatchObject({
+  expect(p1.playRound(mockedGameboardControllerWater, 0,0)).toMatchObject({
     exit: true,
     water: true
   });
@@ -110,7 +110,7 @@ it('Play human round (water) #1', () => {
 
 it('Play human round (hit) #1', () => {
   const p1 = new Player('PlayerName1', mockedGameboardControllerHit);
-  expect(p1.playTurn(0,0)).toMatchObject({
+  expect(p1.playRound(mockedGameboardControllerHit, 0,0)).toMatchObject({
     exit: true,
     water: false,
     sunk: false
@@ -119,13 +119,13 @@ it('Play human round (hit) #1', () => {
 
 it('Play easy AI round', () => {
   const ai = new Player('PlayerBot1', mockedGameboardControllerWater, PlayerType.ai, BotDifficulty.easy);
-  const reply = ai.playTurn();
+  const reply = ai.playRound(mockedGameboardControllerWater);
   expect(reply.exit).toBeTruthy();
 });
 
 it('Play medium AI round (random) #1', () => {
   const ai = new Player('PlayerBot1', mockedGameboardControllerWater, PlayerType.ai, BotDifficulty.medium);
-  const reply = ai.playTurn();
+  const reply = ai.playRound(mockedGameboardControllerWater);
   expect(reply.exit).toBeTruthy();
 });
 
@@ -133,28 +133,28 @@ it('Play medium AI round (last position) hit and sunk (horizontal) #2', () => {
   const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 4, y: 4};
   ai.stateAI.trackAttacks.add({x: 4, y: 4});
-  let reply = ai.playTurn();
+  let reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 4, y: 4});
   expect(ai.stateAI.isHorizontal).toBeUndefined();
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: 3, y: 4})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 4, y: 4});
   expect(ai.stateAI.isHorizontal).toBeUndefined();
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: 5, y: 4})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 4, y: 4});
   expect(ai.stateAI.isHorizontal).toBeUndefined();
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: 4, y: 3})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeFalsy();
   expect(reply.sunk).toBeTruthy();
@@ -168,14 +168,14 @@ it('Play medium AI round (last position) hit and sunk (vertical) #2', () => {
   const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 7, y: 7};
   ai.stateAI.trackAttacks.add({x: 7, y: 7});
-  let reply = ai.playTurn();
+  let reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 7, y: 7});
   expect(ai.stateAI.isHorizontal).toBeUndefined();
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: 6, y: 7})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeFalsy();
   expect(reply.sunk).toBeTruthy();
@@ -189,7 +189,7 @@ it('Play medium AI round (last position) hit and sunk (vertical ship-length 3) b
   const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 0, y: 2};
   ai.stateAI.trackAttacks.add({x: 0, y: 2});
-  let reply = ai.playTurn();
+  let reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeFalsy();
   expect(reply.sunk).toBeFalsy();
@@ -198,7 +198,7 @@ it('Play medium AI round (last position) hit and sunk (vertical ship-length 3) b
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: -1, y: 2})).toBeTruthy();
   expect(ai.stateAI.trackAttacks.has({x: 1, y: 2})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeFalsy();
   expect(reply.sunk).toBeTruthy();
@@ -212,21 +212,21 @@ it('Play medium AI round (last position) hit and sunk (horizontal ship-length 3)
   const ai = new Player('PlayerBot1', gameboardController, PlayerType.ai, BotDifficulty.medium);
   ai.stateAI.lastPosition = {x: 1, y: 5};
   ai.stateAI.trackAttacks.add({x: 1, y: 5});
-  let reply = ai.playTurn();
+  let reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 1, y: 5});
   expect(ai.stateAI.isHorizontal).toBeUndefined();
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: 0, y: 5})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 1, y: 5});
   expect(ai.stateAI.isHorizontal).toBeUndefined();
   expect(ai.stateAI.trackPositions.length).toBe(0);
   expect(ai.stateAI.trackAttacks.has({x: 2, y: 5})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeFalsy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 1, y: 4});
@@ -234,13 +234,13 @@ it('Play medium AI round (last position) hit and sunk (horizontal ship-length 3)
   expect(ai.stateAI.trackPositions.length).toBe(1);
   expect(ai.stateAI.trackPositions).toEqual(expect.arrayContaining([ {x: 1, y: 6 }]));
   expect(ai.stateAI.trackAttacks.has({x: 1, y: 4})).toBeTruthy();
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeTruthy();
   expect(ai.stateAI.lastPosition).toMatchObject({x: 1, y: 6});
   expect(ai.stateAI.isHorizontal).toBeTruthy();
   expect(ai.stateAI.trackPositions.length).toBe(0);
-  reply = ai.playTurn();
+  reply = ai.playRound(gameboardController);
   expect(reply.exit).toBeTruthy();
   expect(reply.water).toBeFalsy();
   expect(reply.sunk).toBeTruthy();

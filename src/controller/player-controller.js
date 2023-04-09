@@ -1,6 +1,6 @@
 import PlayerType from "Modules/player-type";
 import BotDifficulty from "Modules/bot-difficulty";
-import AttackTrackerSet from "Modules/attack-tracker-set";
+import CoordinateTrackerSet from "Modules/coordinate-tracker-set";
 
 export default class Player {
   constructor(name, gameboard, type = PlayerType.human, difficulty = undefined) {
@@ -14,7 +14,7 @@ export default class Player {
     this.stateAI = {
       lastPosition: undefined,
       isHorizontal: undefined,
-      trackAttacks: new AttackTrackerSet(),
+      trackAttacks: new CoordinateTrackerSet(),
       trackPositions: []
     };
   }
@@ -23,18 +23,18 @@ export default class Player {
   
   get GameBoard() { return this.gameboard }
 
-  playTurn(x = undefined, y = undefined) {
+  playRound(opponentGameboard, x = undefined, y = undefined) {
     if ((this.type === PlayerType.human) && ((x === undefined) || (y === undefined))) 
       throw new 'Invalid input';
     
     if (this.type === PlayerType.human) {
-      return this.gameboard.receiveAttack(x, y);
+      return opponentGameboard.receiveAttack(x, y);
     } 
     
-    return this.#playTurnAI();
+    return this.#playRoundAI(opponentGameboard);
   }
 
-  #playTurnAI() {
+  #playRoundAI(opponentGameboard) {
     const {lastPosition} = this.stateAI;
     const attacks = [];
     let reply;
@@ -61,20 +61,22 @@ export default class Player {
           if (!this.stateAI.trackAttacks.has({ x: lastPosition.x, y: lastPosition.y + 1 }))
             attacks.push({ x: lastPosition.x, y: lastPosition.y + 1 });
         } 
+
+        if (attacks.length === 0) random = true;
       }
     }
 
     do {
       if (this.difficulty === BotDifficulty.easy || random) {
         position = { 
-          x: Math.floor(Math.random() * this.gameboard.boardSize),
-          y: Math.floor(Math.random() * this.gameboard.boardSize)
+          x: Math.floor(Math.random() * opponentGameboard.boardSize),
+          y: Math.floor(Math.random() * opponentGameboard.boardSize)
         };
       } else {
         // use `stateAI` to evaluate BOT difficulty (remember state)
         position = attacks.shift();
       }
-      reply = this.gameboard.receiveAttack(position.x, position.y);
+      reply = opponentGameboard.receiveAttack(position.x, position.y);
       this.stateAI.trackAttacks.add(position);
     } while (!reply.exit);
 
@@ -83,7 +85,8 @@ export default class Player {
       this.stateAI.isHorizontal = undefined;
       this.stateAI.trackPositions = [];
     } else if (!reply.water) {
-      this.stateAI.isHorizontal = (this.stateAI.lastPosition.x - position.x) === 0;
+      this.stateAI.isHorizontal = this.stateAI.lastPosition !== undefined ? (this.stateAI.lastPosition.x - position.x) === 0 
+        : false;
       this.stateAI.lastPosition = position;
       for (let i = 0; i < attacks.length; i += 1) {
         const attack = attacks[i];

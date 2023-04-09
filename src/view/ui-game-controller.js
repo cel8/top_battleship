@@ -40,7 +40,7 @@ export default class UiGameController {
       object: undefined
     };
     this.desPlaceShip = {
-      lengths: [ 1, 2, 3, 3, 4, 5 ],
+      lengths: [ 1, 1, 1, 2, 2, 3, 3, 4, 5 ],
       current: 0,
       vertical: true
     };
@@ -489,11 +489,7 @@ export default class UiGameController {
   #doPlayRoundAI() {
     let phase;
     do {
-      const x = Math.floor(Math.random() * this.curPlayer.object.GameBoard.BoardSize);
-      const y = Math.floor(Math.random() * this.curPlayer.object.GameBoard.BoardSize);
-      const parent = document.querySelector(`[data-player='A']`);
-      const element = parent.querySelector(`[data-x='${x}'][data-y='${y}']`);
-      phase = this.#doPlayRoundUI(element, x, y);
+      phase = this.#doPlayRoundUI();
     } while (!phase);
 
     if (phase) {
@@ -510,20 +506,29 @@ export default class UiGameController {
     playerName.textContent = `It is ${this.curPlayer.object.Name} round`;
   }
 
-  #doPlayRoundUI(target, x, y) {
+  #doPlayRoundUI(target = undefined, x = undefined, y = undefined) {
     let phase;
-    const parent = target.parentNode;
-    const roundValue = this.#getOpponentPlayer().object.playTurn(x, y);
+    let parent;
+    let element;
+    const roundValue = this.curPlayer.object.playRound(this.#getOpponentPlayer().object.GameBoard, x, y);
+    
     if (roundValue.exit) {
+      if (!target) {
+        parent = document.querySelector(`[data-player='A']`);
+        element = parent.querySelector(`[data-x='${roundValue.attack.x}'][data-y='${roundValue.attack.y}']`);
+      } else {
+        parent = target.parentNode;
+        element = target;
+      }
       if (roundValue.water) {
-        UiGameController.#setWater(target);
+        UiGameController.#setWater(element);
         // Switch player
-        if (target.textContent !== '*') {
+        if (element.textContent !== '*') {
           this.#doSwitchRound();
           phase = phases.waitRound;
         }
       } else {
-        UiGameController.#setHit(target);
+        UiGameController.#setHit(element);
         if (roundValue.sunk) {
           UiGameController.#sunkShip(parent, roundValue.coordinates);
           if (this.#getPlayerSide(this.curPlayer.object) === 'A') {
